@@ -2,7 +2,7 @@ name: Docker Publish
 
 on:
   push:
-    branches: [ master ] # Or 'main' if that's your default branch
+    branches: [ master ] 
     tags:
       - 'v*.*.*'
   workflow_dispatch:
@@ -22,30 +22,35 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }} 
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Define Image Names
-        id: image_names # Step to define image names based on repo name
+      - name: Prepare image metadata (lowercase owner and repo)
+        id: meta 
         run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}')
-          echo "backend_image_name=${REPO_NAME}/fauxpas-backend" >> $GITHUB_OUTPUT
-          echo "frontend_image_name=${REPO_NAME}/fauxpas-frontend" >> $GITHUB_OUTPUT
-          echo "ml_api_image_name=${REPO_NAME}/fauxpas-ml-api" >> $GITHUB_OUTPUT
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME_LC=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]') # Get repo name and lowercase it
+          echo "owner_lc=${OWNER_LC}" >> $GITHUB_OUTPUT
+          echo "backend_image_name=${REPO_NAME_LC}/fauxpas-backend" >> $GITHUB_OUTPUT
+          echo "frontend_image_name=${REPO_NAME_LC}/fauxpas-frontend" >> $GITHUB_OUTPUT
+          echo "ml_api_image_name=${REPO_NAME_LC}/fauxpas-ml-api" >> $GITHUB_OUTPUT
+          # For the simple case where image name is just the sub-project name:
+          # echo "backend_image_name_simple=fauxpas-backend" >> $GITHUB_OUTPUT 
+          # (and use this if you prefer simpler image names directly under the owner)
 
       - name: Build and push Backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
-          file: ./backend/Dockerfile # Your production Dockerfile
+          file: ./backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.backend_image_name }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.backend_image_name }}:${{ github.sha }}
-            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', github.repository_owner, steps.image_names.outputs.backend_image_name, github.ref_name) || '' }}
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.backend_image_name }}:latest
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.backend_image_name }}:${{ github.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', steps.meta.outputs.owner_lc, steps.meta.outputs.backend_image_name, github.ref_name) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -53,12 +58,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          file: ./frontend/Dockerfile # Your production Nginx Dockerfile
+          file: ./frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.frontend_image_name }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.frontend_image_name }}:${{ github.sha }}
-            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', github.repository_owner, steps.image_names.outputs.frontend_image_name, github.ref_name) || '' }}
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.frontend_image_name }}:latest
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.frontend_image_name }}:${{ github.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', steps.meta.outputs.owner_lc, steps.meta.outputs.frontend_image_name, github.ref_name) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -69,8 +74,8 @@ jobs:
           file: ./ml_api/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.ml_api_image_name }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.ml_api_image_name }}:${{ github.sha }}
-            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', github.repository_owner, steps.image_names.outputs.ml_api_image_name, github.ref_name) || '' }}
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.ml_api_image_name }}:latest
+            ghcr.io/${{ steps.meta.outputs.owner_lc }}/${{ steps.meta.outputs.ml_api_image_name }}:${{ github.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', steps.meta.outputs.owner_lc, steps.meta.outputs.ml_api_image_name, github.ref_name) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
