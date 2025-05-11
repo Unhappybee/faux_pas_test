@@ -14,7 +14,6 @@ async function main() {
   });
 
   // --- Story Data Structure ---
-  // We'll define stories and their questions together for clarity
   const storiesData =
       [
         // --- Story 2 (Faux Pas) ---
@@ -332,7 +331,7 @@ async function main() {
               type: QuestionType.MULTIPLE_CHOICE,
               choices: [
                 'She was busy', 'She was going home',
-                'She had to go somewhere else'
+                'Zack was chasing pigeons', 'She had to go somewhere else'
               ],
               correctAnswer: 'Zack was chasing pigeons',
               isControl: true
