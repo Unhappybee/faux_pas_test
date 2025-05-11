@@ -1,0 +1,76 @@
+name: Docker Publish
+
+on:
+  push:
+    branches: [ master ] # Or 'main' if that's your default branch
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build-and-push-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Define Image Names
+        id: image_names # Step to define image names based on repo name
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | awk -F'/' '{print $2}')
+          echo "backend_image_name=${REPO_NAME}/fauxpas-backend" >> $GITHUB_OUTPUT
+          echo "frontend_image_name=${REPO_NAME}/fauxpas-frontend" >> $GITHUB_OUTPUT
+          echo "ml_api_image_name=${REPO_NAME}/fauxpas-ml-api" >> $GITHUB_OUTPUT
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile # Your production Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.backend_image_name }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.backend_image_name }}:${{ github.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', github.repository_owner, steps.image_names.outputs.backend_image_name, github.ref_name) || '' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile # Your production Nginx Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.frontend_image_name }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.frontend_image_name }}:${{ github.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', github.repository_owner, steps.image_names.outputs.frontend_image_name, github.ref_name) || '' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push ML API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ml_api
+          file: ./ml_api/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.ml_api_image_name }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image_names.outputs.ml_api_image_name }}:${{ github.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', github.repository_owner, steps.image_names.outputs.ml_api_image_name, github.ref_name) || '' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
