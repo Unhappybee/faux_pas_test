@@ -1,0 +1,123 @@
+/* src/ResultsPage.css */
+
+.results-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: sans-serif;
+    color: #333;
+  }
+  
+  .results-container h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+  }
+  
+  .results-section {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .results-section h3 {
+    color: #3498db;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+  
+  .score-display {
+    margin-bottom: 1rem;
+  }
+  
+  .score-display strong {
+    color: #555;
+  }
+  
+  .score-bar-container {
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    height: 20px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    width: 100%; /* Make bar full width */
+  }
+  
+  .score-bar {
+    height: 100%;
+    background-color: #3498db; /* Blue for neutral progress */
+    border-radius: 4px 0 0 4px;
+    transition: width 0.5s ease-in-out;
+    text-align: center;
+    color: white;
+    font-size: 0.8em;
+    line-height: 20px; /* Vertically center text */
+  }
+  
+  /* Optional: Color coding for ratios - use with caution */
+  .score-bar.high { background-color: #2ecc71; } /* Green */
+  .score-bar.medium { background-color: #f39c12; } /* Orange */
+  .score-bar.low { background-color: #e74c3c; } /* Red - maybe too alarming */
+  
+  .excluded-note {
+    font-style: italic;
+    color: #e74c3c;
+    font-size: 0.9em;
+    margin-top: 0.5rem;
+    background-color: #fbeaea;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+  }
+  
+  .interpretation-notes {
+    background-color: #eaf2f8;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #aed6f1;
+    margin-top: 1.5rem;
+  }
+  
+  .interpretation-notes h4 {
+    margin-top: 0;
+    color: #2980b9;
+  }
+  
+  .interpretation-notes p {
+    font-size: 0.95em;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+  
+  .disclaimer {
+      font-weight: bold;
+      color: #7f8c8d;
+      margin-top: 1rem;
+  }
+  
+  .finish-button {
+    display: block;
+    width: fit-content;
+    margin: 2rem auto 0 auto;
+    padding: 0.8rem 1.5rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .finish-button:hover {
+    background-color: #2980b9;
+  }

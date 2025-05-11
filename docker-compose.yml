@@ -1,0 +1,80 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: fauxpas_backend_dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/src:/usr/src/app/src
+      - ./backend/prisma:/usr/src/app/prisma
+      - ./backend/package.json:/usr/src/app/package.json
+      - ./backend/package-lock.json:/usr/src/app/package-lock.json
+      - ./backend/tsconfig.json:/usr/src/app/tsconfig.json
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      ML_API_URL: http://ml_api:8000/evaluate
+    depends_on:
+      - db
+      - ml_api
+    networks:
+      - fauxpas_network
+
+  ml_api:
+    build:
+      context: ./ml_api
+      dockerfile: Dockerfile
+    container_name: fauxpas_ml_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml_api/app:/app/app
+      - ./ml_api/final_trained_model_with_validation:/app/final_trained_model_with_validation
+    environment:
+      PYTHONUNBUFFERED: 1
+    networks:
+      - fauxpas_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: fauxpas_frontend_dev
+    ports:
+      - "5173:5173" # Vite default port
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html 
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/package-lock.json:/app/package-lock.json
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+    environment:
+      VITE_API_URL: http://localhost:8080 
+    depends_on:
+      - backend 
+    networks:
+      - fauxpas_network
+
+  db:
+    image: postgres:15-alpine
+    container_name: fauxpas_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - fauxpas_network
+
+networks:
+  fauxpas_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,0 +1,15 @@
+# frontend/Dockerfile.dev
+
+FROM node:22-alpine
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+# Vite uses port 5173 by default for the dev server
+
+# Command to start the Vite dev server (uses "dev": "vite" script)
+CMD [ "npm", "run", "dev" ]

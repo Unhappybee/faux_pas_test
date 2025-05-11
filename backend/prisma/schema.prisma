@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Enum to define the type of question
+enum QuestionType {
+  BOOLEAN
+  MULTIPLE_CHOICE
+  OPEN_ENDED
+}
+
+enum StoryType {
+  FAUX_PAS
+  CONTROL
+}
+
+// Question model
+model Question {
+  id               Int           @id @default(autoincrement()) // Unique question ID
+  questionText     String        // The question text
+  questionType     QuestionType  // Type of question (Boolean, Multiple-Choice, Open-Ended)
+  groupId          Int           // Foreign key to the question group
+  group            QuestionGroup @relation(fields: [groupId], references: [id])  // Group this question belongs to
+  choices          String[]      // Choices for multiple-choice questions
+  flowYes          Int?          // Redirect to another question if answer is "Yes"
+  flowNo           Int?          // Redirect to another question if answer is "No"
+  parentQuestionId Int?          // ID of the parent question (if this is a child question)
+  parentQuestion   Question?     @relation("ParentChildQuestions", fields: [parentQuestionId], references: [id])
+  childQuestions   Question[]    @relation("ParentChildQuestions") // This is the opposite side of the parent-child relationship
+  storyId          Int?          // Foreign key to the Story model
+  story            Story?        @relation(fields: [storyId], references: [id]) // Link to the story text
+  orderInStory     Int?
+  createdAt        DateTime      @default(now()) // Timestamp of creation
+  updatedAt        DateTime      @updatedAt      // Timestamp of last update
+  answers          UserAnswer[]  // Answers linked to this question
+  correctAnswer    String?       //faux pas evaluation
+  isControl        Boolean   @default(false)
+  @@unique([storyId, orderInStory])
+}
+
+// QuestionGroup model
+model QuestionGroup {
+  id        Int        @id @default(autoincrement())
+  name      String     // Name of the group (e.g., "Personal Information", "Emotional Questions")
+  questions Question[] // Questions related to this group
+}
+
+// User model
+model User {
+  id        Int          @id @default(autoincrement()) // Unique user ID
+  username  String       
+  answers   UserAnswer[] // Answers provided by the user
+  createdAt DateTime     @default(now()) // Timestamp of user creation
+  updatedAt DateTime     @updatedAt      // Timestamp of the last update to the user record
+}
+
+// UserAnswer model
+model UserAnswer {
+  id            Int      @id @default(autoincrement()) // Unique answer ID
+  answerText    String    // For Open-ended and Multiple-choice answers
+  userId        Int      // ID of the user answering the question
+  questionId    Int      // ID of the question being answered
+  createdAt     DateTime @default(now()) // Timestamp of answer creation
+  updatedAt     DateTime @updatedAt      // Timestamp of last update
+  question      Question @relation(fields: [questionId], references: [id]) // Link to question
+  user          User     @relation(fields: [userId], references: [id]) // Link to user
+  evaluation    Int?     //evaluation of an answer
+  @@unique([userId, questionId])
+}
+
+// Story model to store the story text for questions
+model Story {
+  id        Int      @id @default(autoincrement()) // Unique story ID
+  storyType StoryType
+  storyText String   // The text of the story
+  storyNumber Int?     @unique
+  createdAt DateTime @default(now()) // Timestamp of story creation
+  updatedAt DateTime @updatedAt      // Timestamp of the last update to the story
+  questions Question[] // Questions related to this story
+}
