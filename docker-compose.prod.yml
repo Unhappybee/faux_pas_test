@@ -1,67 +1,71 @@
-
 services:
   # --- Backend API Service ---
   backend:
-    image: ghcr.io/unhappybee/faux_pas_test/fauxpas-backend:latest 
-    container_name: fauxpas_backend_prod
+    image: ${BACKEND_IMAGE_NAME}
+    container_name: ${BACKEND_CONTAINER_NAME}
     ports:
-      - "8080:8080" 
+      - "${BACKEND_HOST_PORT}:8080"
     environment:
-      DATABASE_URL: ${DATABASE_URL} 
-      ML_API_URL: http://ml_api:8000/evaluate 
-      NODE_ENV: production 
+      DATABASE_URL: ${DATABASE_URL}
+      ML_API_URL: http://${ML_API_SERVICE_NAME:-ml_api}:${ML_API_INTERNAL_PORT:-8000}/evaluate
+      NODE_ENV: ${NODE_ENV:-production}
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
       ml_api:
-        condition: service_started 
+        condition: service_started
     networks:
-      - fauxpas_network
-    restart: unless-stopped 
+      - ${NETWORK_NAME}
+    restart: ${RESTART_POLICY:-unless-stopped}
 
   ml_api:
-    image: ghcr.io/unhappybee/faux_pas_test/fauxpas-ml-api:latest 
-    container_name: fauxpas_ml_api_prod
+    image: ${ML_API_IMAGE_NAME}
+    container_name: ${ML_API_CONTAINER_NAME}
     environment:
-      PYTHONUNBUFFERED: 1
+      PYTHONUNBUFFERED: 1 
     networks:
-      - fauxpas_network
-    restart: unless-stopped
+      - ${NETWORK_NAME}
+    restart: ${RESTART_POLICY:-unless-stopped}
 
   frontend:
-    image: ghcr.io/unhappybee/faux_pas_test/fauxpas-frontend:latest 
-    container_name: fauxpas_frontend_prod
+    image: ${FRONTEND_IMAGE_NAME}
+    container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
-      - "80:80" 
+      - "${FRONTEND_HOST_PORT}:80"
     depends_on:
-      - backend 
+      - backend
     networks:
-      - fauxpas_network
-    restart: unless-stopped
+      - ${NETWORK_NAME}
+    restart: ${RESTART_POLICY:-unless-stopped}
+
 
   db:
-    image: postgres:15-alpine
-    container_name: fauxpas_db_prod
+    image: ${DB_IMAGE_NAME}
+    container_name: ${DB_CONTAINER_NAME}
     ports:
-      - "5432:5432" 
+      - "${DB_HOST_PORT}:5432"
     volumes:
-      - postgres_data_prod:/var/lib/postgresql/data 
+      - fauxpas_postgres_data_prod:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${POSTGRES_USER} 
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
-      POSTGRES_DB: ${POSTGRES_DB} 
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"] 
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - fauxpas_network
-    restart: unless-stopped
+      - fauxpas_prod_network
+    restart: ${RESTART_POLICY:-unless-stopped}
 
 networks:
-  fauxpas_network:
+  fauxpas_prod_network:
     driver: bridge
+    name: ${NETWORK_NAME:-fauxpas_prod_network}
+
+
 
 volumes:
-  postgres_data_prod: 
+  fauxpas_postgres_data_prod:
+    name: ${DB_VOLUME_NAME:-fauxpas_fauxpas_postgres_data_prod}

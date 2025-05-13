@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { fetchQuestions, submitAnswers } from "../utils/Api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Question } from "../types/Questionnaire";
+import "./QuestionnaireForm.css"; 
 
 
 const QuestionnaireForm: React.FC = () => {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUser } from "../utils/Api";
+import "./UserRegistration.css"; 
 
 const UserRegistration: React.FC = () => {
   const [username, setUsername] = useState("");

@@ -2,6 +2,11 @@
 :root {
   --background-color: #ffffff;
   --text-color: #1a1a1a;
+  /* Add other global color variables if needed, e.g., accent colors */
+  --primary-color: #646cff;
+  --accent-color: #dcc40e;
+  --error-color: #ff4c4c;
+  --disabled-color: #444;
 }
 
 /* Dark Mode */
@@ -9,165 +14,36 @@
   :root {
     --background-color: #242424;
     --text-color: rgba(255, 255, 255, 0.87);
+    /* Adjust dark mode specifics if needed */
+    --primary-color: #7a7eff;
+    --accent-color: #e7d32e;
   }
 }
 
 /* Apply the colors */
 body {
-  background-color: var(--background-color);
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; /* Example good default font stack */
+  line-height: 1.5;
+  font-weight: 400;
+  margin: 0; /* Common reset */
+
+  color-scheme: light dark; /* Informs browser about supported schemes */
   color: var(--text-color);
+  background-color: var(--background-color);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-
-/* Container for the form */
-.form-container {
-  width: 100vw; 
-  height: 100vh; 
-  display: flex;
-  flex-direction: column; /* Stack items vertically */
-  justify-content: center; /* Center content vertically */
-  align-items: center; /* Center content horizontally */
-  padding: 20px;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  overflow-y: auto; /* Allows scrolling if content overflows */
-  box-sizing: border-box; /* Ensures padding is included in width/height */
-}
-
-
-/* Title Styling */
-.form-title {
-  font-size: 1.8em;
-  font-weight: bold;
-  text-align: top;
-  margin-bottom: 20px;
-  color: #f4f4f2;
-}
-
-/* Question Styling */
-.question {
-  margin-bottom: 20px;
-}
-
-.question-label {
-  font-size: 1.2em; 
-  font-weight: 600; 
-  color: var(--text-color);
-  line-height: 1.4; 
-  margin-bottom: 20px;
-}
-
-/* Textarea Styling */
-.question-textarea {
-  width: 100%;
-  box-sizing: border-box;.nav-button.disabled {
-    background-color: gray;
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  padding: 10px;
-  font-size: 1em;
-  border: 2px solid #646cff;
-  border-radius: 6px;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  resize: none;
-  transition: border 0.3s ease-in-out;
-}
-
-.input-field{
-  width: 250px;
-  box-sizing: border-box;.nav-button.disabled {
-    background-color: gray;
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  padding: 10px;
-  margin-bottom: 20px;
-  font-size: 16px;
-  border: 2px solid #646cff;
-  border-radius: 6px;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  resize: none;
-  transition: border 0.3s ease-in-out;
-}
-
-.question-textarea:focus {
-  border-color: #dcc40e;
-  outline: none;
-}
-
-.choices-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.one-columns {
-  grid-template-columns: repeat(1, 1fr); 
-}
-
-.three-columns {
-  grid-template-columns: repeat(3, 1fr); 
-}
-
-.option-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-
-.example-answer {
-  font-size: 1em; 
-  font-weight: 500; 
-  color: var(--text-color);
-  line-height: 1.4; 
-  margin-bottom: 20px;
-  font-style: italic;
-}
 
 /* Error Message Styling */
 .error-message {
   color: #ff4c4c;
   font-size: 0.9em;
   margin-top: 5px;
-}
-
-/* Navigation Buttons */
-.navigation-buttons {
-  position: absolute; /* Stick buttons at the bottom */
-  bottom: 20px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between; /* Ensure buttons stay apart */
-  padding: 0 20px; /* Adds padding on sides */
-  box-sizing: border-box;
-}
-
-.nav-button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  background-color: #646cff;
-  color: white;
-  font-size: 1em;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: inline-block; /* Ensures buttons don't expand */
-  text-align: center;
-}
- 
-.nav-button:hover {
-  background-color: #535bf2;
-}
-
-.nav-button:disabled {
-  background-color: #444;
-  cursor: not-allowed;
 }
 
 /* Submit Button */
@@ -192,71 +68,3 @@ body {
   background-color: #444;
   cursor: not-allowed;
 }
-
-/* Progress Bar */
-.progress-bar-container {
-  width: 100%;
-  background-color: var(--text-color);
-  height: 12px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 100%;
-  background-color: #3498db;
-  transition: width 0.3s ease-in-out;
-}
-
-.progress-text {
-  font-size: 14px;
-  color: var(--text-color);
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-
-.title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.description {
-  font-size: 16px;
-  margin-bottom: 20px;
-}
-
-.button-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-}
-
-.group-button, .back-button {
-  width: 200px;
-  padding: 10px;
-  font-size: 16px;
-  background-color: #646cff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.group-button:hover, .back-button:hover {
-  background-color: #535bf2;
-}
-
-.message {
-  font-size: 14px;
-  color: gray;
-}
-
-.error-message {
-  color: red;
-}
-
