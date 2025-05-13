@@ -14,9 +14,25 @@ jobs:
       contents: read
       packages: write
 
+    outputs: # Define outputs if other jobs depend on whether an image was built
+      backend_built: ${{ steps.build-backend.outputs.did_build }}
+      frontend_built: ${{ steps.build-frontend.outputs.did_build }}
+      ml_api_built: ${{ steps.build-ml-api.outputs.did_build }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44 # Or similar action
+        with:
+          
+          files_ignore: |
+            README.md
+            .gitignore
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -41,7 +57,27 @@ jobs:
           # echo "backend_image_name_simple=fauxpas-backend" >> $GITHUB_OUTPUT 
           # (and use this if you prefer simpler image names directly under the owner)
 
+      - name: Check if backend files changed
+        id: backend-changes
+        run: |
+          echo "Checking backend..."
+          if [[ "${{ steps.changed-files.outputs.any_changed }}" == "true" ]]; then
+            # More specific check for backend directory
+            if git diff --quiet HEAD^ HEAD -- ./backend; then
+              echo "No changes in ./backend"
+              echo "changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected in ./backend"
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "No files changed in the push according to tj-actions/changed-files"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Backend image
+        id: build-backend 
+        if: steps.backend-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -54,7 +90,30 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Set backend_built output
+        if: steps.backend-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+        run: echo "did_build=true" >> $GITHUB_OUTPUT 
+        id: set-backend-output
+
+      - name: Check if frontend files changed
+        id: frontend-changes
+        run: |
+          echo "Checking frontend..."
+          if [[ "${{ steps.changed-files.outputs.any_changed }}" == "true" ]]; then
+            if git diff --quiet HEAD^ HEAD -- ./frontend; then
+              echo "No changes in ./frontend"
+              echo "changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected in ./frontend"
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Frontend image
+        id: build-frontend
+        if: steps.frontend-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
@@ -67,7 +126,30 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Set frontend_built output
+        if: steps.frontend-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+        run: echo "did_build=true" >> $GITHUB_OUTPUT
+        id: set-frontend-output
+
+      - name: Check if ml_api files changed
+        id: ml-api-changes
+        run: |
+          echo "Checking ml_api..."
+          if [[ "${{ steps.changed-files.outputs.any_changed }}" == "true" ]]; then
+            if git diff --quiet HEAD^ HEAD -- ./ml_api; then
+              echo "No changes in ./ml_api"
+              echo "changed=false" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected in ./ml_api"
+              echo "changed=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push ML API image
+        id: build-ml-api
+        if: steps.ml-api-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v5
         with:
           context: ./ml_api
@@ -79,3 +161,8 @@ jobs:
             ${{ startsWith(github.ref, 'refs/tags/') && format('ghcr.io/{0}/{1}:{2}', steps.meta.outputs.owner_lc, steps.meta.outputs.ml_api_image_name, github.ref_name) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Set ml_api_built output
+        if: steps.ml-api-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+        run: echo "did_build=true" >> $GITHUB_OUTPUT
+        id: set-ml-api-output
