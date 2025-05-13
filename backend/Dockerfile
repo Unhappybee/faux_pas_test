@@ -17,4 +17,4 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/dist_scripts ./dist_scripts 
 
 EXPOSE 8080
-CMD [ "node", "dist/server.js" ] 
+CMD ["sh", "-c", "echo 'Attempting to apply migrations...' && npx prisma migrate deploy && echo 'Migrations applied. Starting application...' && node dist/server.js"]
