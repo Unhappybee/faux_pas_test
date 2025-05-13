@@ -1,0 +1,24 @@
+// backend/tsconfig.scripts.json
+{
+  "extends": "./tsconfig.json", // Inherit common settings
+  "compilerOptions": {
+    "outDir": "./dist_scripts", // Output to a separate directory
+    "rootDir": "./src/scripts", // Only compile files from here
+    "module": "commonjs",        // Ensure CommonJS for Node
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true, // If your scripts import JSON
+    "noEmit": false           // Make sure it emits files
+  },
+  "include": [
+    "./src/scripts/**/*.ts"     // Only include .ts files in src/scripts
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/server.ts", // Exclude main app code
+    "src/evaluation.ts",
+    "src/final_score.ts"
+    // Add other non-script files from src if necessary
+  ]
+}

@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "prestart": "npm run build",
+  "dev": "nodemon src/server.ts",
+    "build:app": "tsc", 
+    "build:scripts": "tsc -p tsconfig.scripts.json", 
+    "build": "npm run build:app && npm run build:scripts", 
+    "prestart": "echo 'Skipping prestart build in prod, already built in image'",
     "start": "node dist/server.js",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",
-    "seed:fauxpas": "ts-node src/scripts/faux_pas.ts"
+    "seed:fauxpas": "node dist_scripts/faux_pas.js", 
+    "seed:fauxpas:short": "node dist_scripts/faux_pas_short.js" 
   },
   "keywords": [],
   "author": "",
