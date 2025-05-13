@@ -174,7 +174,7 @@ const ResultsPage: React.FC = () => {
 
             {/* Finish Button */}
             <button className="finish-button" onClick={() => navigate(`/register`, { replace: true })}>
-                Finish & Select Another Group
+                Finish 
             </button>
         </div>
     );
