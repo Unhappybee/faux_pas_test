@@ -1,21 +1,21 @@
 # backend/Dockerfile
 
 
-    FROM node:22-alpine AS builder
+FROM node:22-alpine AS builder
     
-    WORKDIR /usr/src/app
+WORKDIR /usr/src/app
     
-    COPY package*.json ./
+COPY package*.json ./
     
-    RUN npm install
+RUN npm install
     
-    COPY prisma ./prisma/
+COPY prisma ./prisma/
     
-    COPY . .
+COPY . .
     
-    RUN npx prisma generate
+RUN npx prisma generate
 
-    RUN npm run build
+RUN npm run build
 
 
 
