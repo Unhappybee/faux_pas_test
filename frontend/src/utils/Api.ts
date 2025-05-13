@@ -3,12 +3,25 @@ import axios from 'axios';
 import {FinalScores} from '../types/Evaluation';
 import {Question} from '../types/Questionnaire';
 
-const API_URL = 'http://localhost:8080';
+
+const API_URL = process.env.API_URL || 'http://localhost:8080';
+
+/**
+ * Creates a new user by sending a POST request to the backend.
+ * @param username The username of the user to create.
+ * @returns The data of the created user from the backend response.
+ */
 export const createUser = async (username: string) => {
   const response = await axios.post(`${API_URL}/users`, {username});
   return response.data;
 };
 
+
+/**
+ * Fetches questions for a specific group ID.
+ * @param groupId The ID of the question group to fetch questions for.
+ * @returns A Promise that resolves to an array of Question objects.
+ */
 export const fetchQuestions = async(groupId: number): Promise<Question[]> => {
   try {
     const response = await axios.get(`${API_URL}/questions/group/${groupId}`);
@@ -19,6 +32,12 @@ export const fetchQuestions = async(groupId: number): Promise<Question[]> => {
   }
 };
 
+/**
+ * Submits answers for a specific user.
+ * @param userId The ID of the user to submit answers for.
+ * @param responses An object mapping question IDs to their respective answers.
+ * @returns A Promise that resolves when the submission is complete.
+ */
 export const submitAnswers =
     async (userId: number, responses: {[key: number]: string|string[]}) => {
   const answers = Object.entries(responses).map(([questionId, answer]) => {
@@ -48,14 +67,19 @@ export const submitAnswers =
     console.log(`Raw answers submitted for user ${userId}`);
 
   } catch (error) {
-    // ... (error handling as before) ...
     console.error('Failed to submit answers', error);
-    if (axios.isAxiosError(error) && error.response) { /*...*/
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('Error response:', error.response.data);
     }
-    throw new Error('...');
+    throw new Error('Failed to submit question groups');
   }
 };
 
+/**
+ * Is not used in the frontend, but can be used to fetch all questions.
+ * Fetches the question groups from the backend.
+ * @returns A Promise that resolves to an array of question groups.
+ */
 export const getQuestionGroups = async () => {
   const response = await fetch(`${API_URL}/groups`);
   if (!response.ok) {
@@ -64,16 +88,12 @@ export const getQuestionGroups = async () => {
   return response.json();
 };
 
-export const checkUserProgress = async (userId: string|null) => {
-  try {
-    const response = await axios.get(`${API_URL}/users/${userId}/progress`);
-    return response.data;
-  } catch (error) {
-    console.error('Error checking user progress', error);
-    throw error;
-  }
-};
 
+/**
+ * Fetches the final scores for a specific user.
+ * @param userId The ID of the user to fetch scores for.
+ * @returns A Promise that resolves to the FinalScores object.
+ */
 export const calculateAndFetchScores =
     async(userId: number): Promise<FinalScores> => {
   try {

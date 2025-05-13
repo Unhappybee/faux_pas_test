@@ -16,7 +16,7 @@ const UserRegistration: React.FC = () => {
 
     try {
       const response = await createUser(username);
-      navigate(`/questionnaire?userId=${response.id}&groupId=1`);
+      navigate(`/questionnaire?userId=${response.id}&groupId=1`); //change if any other groups will be added
     } catch (err) {
       console.error("Failed to create user", err);
       setError("Something went wrong. Please try again.");

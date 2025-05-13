@@ -147,6 +147,7 @@ app.post('/answers', async (req, res) => {
     }
   }
 });
+
 // Route to trigger evaluation and calculate final scores
 app.post('/users/:userId/calculate-scores', async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
@@ -215,6 +216,8 @@ app.post('/users', async (req, res) => {
   }
 });
 
+// Route to get all groups wasn't used in the frontend
+// but can be used to fetch all groups.
 app.get('/groups', async (req, res) => {
   try {
     const groups = await prisma.questionGroup.findMany({
@@ -244,26 +247,6 @@ app.get('/questions/group/:groupId', async (req, res) => {
     res.status(200).json(questions);
   } catch (error) {
     res.status(500).json({error: 'Failed to fetch questions for the group'});
-  }
-});
-
-app.get('/users/:userId/progress', async (req, res) => {
-  const {userId} = req.params;
-
-  try {
-    const userAnswers = await prisma.userAnswer.findMany({
-      where: {userId: parseInt(userId)},
-      include: {question: true},
-    });
-
-    const completedGroups = new Set<number>();
-    userAnswers.forEach((answer) => {
-      completedGroups.add(answer.question.groupId);
-    });
-
-    res.status(200).json({completedGroups: Array.from(completedGroups)});
-  } catch (error) {
-    res.status(500).json({error: 'Failed to fetch user progress'});
   }
 });
 

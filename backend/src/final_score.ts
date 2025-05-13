@@ -36,8 +36,17 @@ export interface FinalScores {
 }
 
 
-// Helper to retrieve the evaluation score (0 or 1) for a specific question
-// within a specific story from the user's evaluated answers.
+/**
+ * Helper function to retrieve the evaluation score for a specific question
+ * within a story. The evaluation score (0, 1, or -1) is assumed to have been
+ * set by the `evaluateUserTest` function.
+ * @param answers Array of all user answers with their evaluations.
+ * @param storyId The ID of the story to look within.
+ * @param questionOrder The order of the question within that story (e.g., 1 for
+ *     Q1, 2 for Q2).
+ * @returns The evaluation score (number), null if the evaluation was explicitly
+ *     null, or undefined if no such answer/question combination exists.
+ */
 function getScore(
     answers: EvaluationData['answers'],  // All evaluated answers for the user
     storyId: number,  // The ID of the story we're interested in
@@ -55,9 +64,16 @@ function getScore(
   return answer?.evaluation;
 }
 
-// Helper to check if a user provided *any* answer for a specific question
-// within a specific story. This is crucial for Control Story Q2, Q3, Q4
-// scoring.
+/**
+ * Helper function to check if a user provided *any* answer for a specific
+ * question within a story. This is crucial for Control Story scoring, where
+ * *not* answering Q2, Q3, or Q4 (if Q1 was "No") earns points.
+ * @param answers Array of all user answers.
+ * @param storyId The ID of the story.
+ * @param questionOrder The order of the question within that story.
+ * @returns True if an answer record exists for that question in that story,
+ *     false otherwise.
+ */
 function wasAnswered(
     answers: EvaluationData['answers'],  // All evaluated answers for the user
     storyId: number,                     // The ID of the story
@@ -68,6 +84,14 @@ function wasAnswered(
           a.question.orderInStory === questionOrder);
 }
 
+/**
+ * Calculates all final aggregate scores (ratios and control question counts)
+ * for a given user. This function assumes that individual answers have already
+ * been evaluated by `evaluateUserTest` and their `evaluation` field is
+ * populated.
+ * @param userId The ID of the user for whom to calculate scores.
+ * @returns A Promise resolving to the FinalScores object.
+ */
 export async function calculateFinalScoresForUser(userId: number):
     Promise<FinalScores> {
   const userAnswers = await prisma.userAnswer.findMany({
@@ -88,6 +112,8 @@ export async function calculateFinalScoresForUser(userId: number):
 
   const evaluationData: EvaluationData = {userId, answers: userAnswers};
 
+  // Group the user's answers by `storyId` for easier processing of each story
+  // individually.
   const answersByStory = new Map<number, EvaluationData['answers']>();
   for (const answer of evaluationData.answers) {
     if (answer.question.storyId) {
@@ -110,6 +136,7 @@ export async function calculateFinalScoresForUser(userId: number):
   let numValidFpStories = 0;
   let numValidControlStories = 0;
 
+  // Iterate through each story the user answered questions for.
   for (const [storyId, storyAnswersForThisStory] of answersByStory.entries()) {
     const story = storyAnswersForThisStory[0]?.question.story;
     if (!story) {  // Safety check, should not happen if data is consistent
@@ -124,13 +151,13 @@ export async function calculateFinalScoresForUser(userId: number):
                                 // for *this specific story*
     let hasControlError = false;  // Flag to indicate if *any* control question
                                   // for this story was answered incorrectly
+    // Filter out only the control questions (Q7, Q8) for the current story.
     const controlQuestionAnswers =
         storyAnswersForThisStory.filter(a => a.question.isControl);
 
     controlQuestionAnswers.forEach(controlAnswer => {
-      storyControlTotal++;  // Increment total control questions for this story
-      if (controlAnswer.evaluation ===
-          1) {  // `evaluation` field was set by `evaluateUserTest`
+      storyControlTotal++;
+      if (controlAnswer.evaluation === 1) {
         storyControlCorrect++;
       } else {
         hasControlError = true;
@@ -147,6 +174,8 @@ export async function calculateFinalScoresForUser(userId: number):
       maxControlQsControl += storyControlTotal;
     }
 
+    // If any control question for this story was failed, mark the story as
+    // invalid. Otherwise, add its correct control Qs to the overall totals.
     if (hasControlError) {
       invalidStoryIds.add(storyId);
     } else {

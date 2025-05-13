@@ -87,13 +87,13 @@ function isAnswerCorrect(
  *     questionId and its calculated score.
  */
 export async function evaluateUserTest(userId: number) {
-  // Step 1: Get all answers for the user, including question and story details
+  // Get all answers for the user, including question and story details
   const userAnswersWithDetails = await prisma.userAnswer.findMany({
     where: {userId},
     include: {
       question: {
         include: {
-          story: true,  // Crucial to get storyType and storyText
+          story: true,
         },
       },
     },
@@ -104,8 +104,7 @@ export async function evaluateUserTest(userId: number) {
     return [];
   }
 
-  // Step 2: Group answers and questions by story
-  // Get unique story IDs for which the user has provided answers
+  // Group answers and questions by story
   const storyIdsAnswered =
       [...new Set(userAnswersWithDetails.map(ua => ua.question.storyId)
                       .filter(id => id !== null))] as number[];
@@ -132,22 +131,18 @@ export async function evaluateUserTest(userId: number) {
   // Array to store the evaluation results before database update
   const evaluatedResults: {questionId: number; score: number | null}[] = [];
 
-  // Step 3: Process each story
+  //  Process each story
   for (const storyId of storyIdsAnswered) {
     const questionsInStory = questionsByStoryId.get(storyId) || [];
-    if (!questionsInStory.length)
-      continue;  // Skip if no questions found for this story (should not
-                 // happen)
+    if (!questionsInStory.length) continue;
 
-    const storyData =
-        questionsInStory[0]
-            .story;  // All questions in this group share the same story
+    const storyData = questionsInStory[0].story;
     if (!storyData) {
       console.warn(`Story data missing for storyId ${storyId}. Skipping.`);
       continue;
     }
 
-    // 3.1 Check Control Questions for this story FIRST (Q7, Q8)
+    // Check Control Questions for this story FIRST (Q7, Q8)
     let storyIsValid = true;
     const controlQs = questionsInStory.filter(
         q => q.isControl && q.orderInStory && [7, 8].includes(q.orderInStory));
@@ -167,17 +162,17 @@ export async function evaluateUserTest(userId: number) {
     }
 
     // If story is invalid, score all its questions -1 and move to the next
-    // story
+
     if (!storyIsValid) {
       console.log(`Story ${
           storyId} is invalid due to failed control question. Scoring all its questions -1.`);
       questionsInStory.forEach(q => {
         evaluatedResults.push({questionId: q.id, score: -1});
       });
-      continue;  // Move to the next story
+      continue;
     }
 
-    // 3.2 Story is valid, proceed with evaluating Q1 (Faux Pas detection)
+    // Story is valid, proceed with evaluating Q1 (Faux Pas detection)
     const q1 = questionsInStory.find(q => q.orderInStory === 1);
     let q1Score: number|null = null;
 
@@ -196,9 +191,9 @@ export async function evaluateUserTest(userId: number) {
           q1Score = 0;  // Missing answer for Q1 is incorrect
         }
       } else if (q1.questionType === QuestionType.OPEN_ENDED) {
-        if (!q1UserAnswer?.answerText) {  // No answer provided
+        if (!q1UserAnswer?.answerText) {
           q1Score = 0;
-        } else if (!storyData.storyText) {  // Story text needed for ML
+        } else if (!storyData.storyText) {
           q1Score = null;
           console.error('Missing story text for Q1 ML call');
         } else {  // Call ML API
@@ -211,7 +206,7 @@ export async function evaluateUserTest(userId: number) {
                 });
             q1Score = response.data.score;
           } catch (e: any) {
-            q1Score = null;  // ML API error
+            q1Score = null;
             console.error('ML API error for Q1:', e.message);
           }
         }
@@ -226,7 +221,7 @@ export async function evaluateUserTest(userId: number) {
     const q1AnswerWasNo = q1 &&
         userAnswersMap.get(q1.id)?.answerText.trim().toLowerCase() === 'no';
 
-    // 3.3 Evaluate child questions Q2, Q3, Q4 (dependent on Q1)
+    // Evaluate child questions Q2, Q3, Q4 (dependent on Q1)
     for (const order of [2, 3, 4]) {
       const childQ = questionsInStory.find(q => q.orderInStory === order);
       if (!childQ) {
@@ -242,7 +237,7 @@ export async function evaluateUserTest(userId: number) {
       // If they do answer, they get 0 for that child question.
       if (storyData.storyType === StoryType.CONTROL && q1AnsweredCorrectly &&
           q1AnswerWasNo) {
-        if (childUserAnswer) {  // User answered (incorrectly for this scenario)
+        if (childUserAnswer) {
           childScore = 0;
           console.log(
               `Control Story ${storyId}, Q${order}: Answered (final score 0).`);
@@ -252,11 +247,8 @@ export async function evaluateUserTest(userId: number) {
           // `calculateFinalScoresForUser` handles giving the point.
           console.log(`Control Story ${storyId}, Q${
               order}: Not answered (final score 1 will be derived later).`);
-          evaluatedResults.push({
-            questionId: childQ.id,
-            score: null
-          });        // Mark as processed, score handled by final_score.ts
-          continue;  // Move to next child question
+          evaluatedResults.push({questionId: childQ.id, score: null});
+          continue;
         }
       }
       // Regular scoring for Faux Pas Story Q2,3,4 or Control Story Q2,3,4 if Q1
@@ -271,14 +263,15 @@ export async function evaluateUserTest(userId: number) {
                 1 :
                 0;
           } else {
-            childScore = 0;  // Missing answer
-          }
-        } else if (childQ.questionType === QuestionType.OPEN_ENDED) {  // Typically
-                                                                       // Q3, Q4
-                                                                       // for FP
-          if (!childUserAnswer?.answerText) {  // No answer
             childScore = 0;
-          } else if (!storyData.storyText) {  // Story text needed for ML
+          }
+        } else if (
+            childQ.questionType === QuestionType.OPEN_ENDED) {  // Typically
+                                                                // Q3, Q4
+                                                                // for FP
+          if (!childUserAnswer?.answerText) {
+            childScore = 0;
+          } else if (!storyData.storyText) {
             childScore = null;
             console.error('Missing story for ML call for child question');
           } else {  // Call ML API
@@ -291,7 +284,7 @@ export async function evaluateUserTest(userId: number) {
                   });
               childScore = response.data.score;
             } catch (e: any) {
-              childScore = null;  // ML API error
+              childScore = null;
               console.error(`ML API error for Q${order}:`, e.message);
             }
           }
@@ -302,8 +295,7 @@ export async function evaluateUserTest(userId: number) {
       evaluatedResults.push({questionId: childQ.id, score: childScore});
     }
 
-    // 3.4 Evaluate Q5, Q6 (independent of Q1's correctness, if story is valid)
-    // These are typically Boolean/Multiple Choice
+    // Evaluate Q5, Q6 (independent of Q1's correctness, if story is valid)
     for (const order of [5, 6]) {
       const q_independent =
           questionsInStory.find(q => q.orderInStory === order);
@@ -324,8 +316,6 @@ export async function evaluateUserTest(userId: number) {
               1 :
               0;
         } else {
-          // Should not happen for Q5/Q6 based on typical Faux Pas test
-          // structure
           console.warn(`Q${order} for story ${storyId} is unexpectedly ${
               q_independent.questionType}`);
           score_independent = null;
@@ -335,13 +325,12 @@ export async function evaluateUserTest(userId: number) {
           {questionId: q_independent.id, score: score_independent});
     }
 
-    // 3.5 Add scores for control questions (Q7, Q8) if the story was deemed
+    // Add scores for control questions (Q7, Q8) if the story was deemed
     // valid. Their correctness contributed to story_is_valid, now we record
     // their actual 0/1 scores.
     controlQs.forEach(cq => {
       const userAnswer = userAnswersMap.get(cq.id);
-      if (userAnswer) {  // Should always exist if story is valid and controlQs
-                         // were checked
+      if (userAnswer) {
         evaluatedResults.push({
           questionId: cq.id,
           score: isAnswerCorrect(  // Re-evaluate to get 0 or 1, not just for
@@ -354,29 +343,22 @@ export async function evaluateUserTest(userId: number) {
     });
   }
 
-  // Step 4: Update evaluations in DB
+  // Update evaluations in DB
   for (const result of evaluatedResults) {
     // Ensure we only update answers that exist for the user
     if (userAnswersMap.has(result.questionId)) {
       await prisma.userAnswer.update({
         where: {
           userId_questionId: {
-            // Unique constraint for a user's answer to a specific question
             userId: userId,
             questionId: result.questionId,
           },
         },
         data: {
-          evaluation: result.score,  // Update the evaluation score
+          evaluation: result.score,
         },
       });
-    } else if (result.score !== null) {  // Only log if we expected to update
-                                         // but couldn't find an answer
-      // This case might happen if a question was part of an invalid story
-      // (score -1) but wasn't answered by the user. Or if a score (e.g. 0 for
-      // unanswered Q1) was generated for a question the user legitimately
-      // skipped. We generally only care to log if a non-null score was
-      // generated for a question without a UserAnswer record.
+    } else if (result.score !== null) {
       console.warn(`Attempted to update evaluation for Question ID ${
           result.questionId} (score: ${
           result.score}) but no UserAnswer record was found for user ${
