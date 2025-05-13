@@ -41,19 +41,45 @@ const QuestionnaireForm: React.FC = () => {
 
   useEffect(() => {
     const currentQuestion = questions[currentQuestionIndex];
-    if (!currentQuestion) return;
-  
-    const userResponse = responses[currentQuestion.id];
-  
-    const isValidResponse =
-      (currentQuestion.questionType === "OPEN_ENDED" && userResponse && userResponse !== "") ||
-      (currentQuestion.questionType === "MULTIPLE_CHOICE" && userResponse) ||
-      (currentQuestion.questionType === "BOOLEAN" && userResponse);
-  
-    setIsNextDisabled(!isValidResponse);
-    setIsSubmitDisabled(!isValidResponse);
-  }, [questions, responses, currentQuestionIndex]);
+    if (!currentQuestion) {
+        // If there's no current question (e.g., questions still loading), disable buttons
+        setIsNextDisabled(true);
+        setIsSubmitDisabled(true);
+        return;
+    }
 
+    const userResponse = responses[currentQuestion.id];
+    let isValidResponse = false; // Default to false
+
+    switch (currentQuestion.questionType) {
+        case "OPEN_ENDED":
+            // Valid if userResponse is a string and not empty after trimming
+            isValidResponse = typeof userResponse === 'string' && userResponse.trim() !== "";
+            break;
+        case "MULTIPLE_CHOICE":
+            // Valid if userResponse is an array and has at least one item selected
+            isValidResponse = Array.isArray(userResponse) && userResponse.length > 0;
+            break;
+        case "BOOLEAN":
+            // Valid if userResponse is a string "Yes" or "No"
+            isValidResponse = typeof userResponse === 'string' && (userResponse === "Yes" || userResponse === "No");
+            break;
+        default:
+            isValidResponse = false; // Or handle unknown types as needed
+    }
+
+    setIsNextDisabled(!isValidResponse);
+
+
+    // A simpler check for "is this the theoretical end" is often just if no flow paths exist *at all*
+    // For your specific submit button condition:
+    const canSubmit = currentQuestion.flowYes === null && !currentQuestion.flowNo;
+
+
+    // Disable submit if it's not the designated submit point OR if the response is invalid
+    setIsSubmitDisabled(!(canSubmit && isValidResponse));
+
+}, [questions, responses, currentQuestionIndex]);
   const handleNext = () => {
     const currentQuestion = questions[currentQuestionIndex];
 
@@ -212,17 +238,18 @@ const QuestionnaireForm: React.FC = () => {
   if (!currentQuestion) return <div>Loading...</div>; 
 
   return (
-    <div className="container">
-      <aside className="sidebar">
-        <h2 className="title">Th.o.m.a.s. Questionnaire</h2>
-      </aside>
-      <main className="content">
+    <div className="questionnaire-page-container">
+      <header className="questionnaire-header">
+        <h1 className="form-title">Th.o.m.a.s. Questionnaire</h1>
         <div className="progress-bar-container">
           <div className="progress-bar" style={{ width: `${progress}%` }}></div>
         </div>
+      </header>
+      <main className="questionnaire-content-area">
+        
   
         {currentQuestion.story && (
-          <div className="story-container">
+          <div className="form-container">
             <h3>Story</h3>
             <p>{currentQuestion.story.storyText}</p>
           </div>

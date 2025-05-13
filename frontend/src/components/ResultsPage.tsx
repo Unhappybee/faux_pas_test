@@ -121,7 +121,7 @@ const ResultsPage: React.FC = () => {
             {/* Section 1: Comprehension Check */}
             <div className="results-section">
                 <h3>Story Comprehension Check</h3>
-                <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '1rem' }}>
+                <p style={{ fontSize: '0.9em',  marginBottom: '1rem' }}>
                     This checks if the basic details of the stories were understood correctly.
                     Good comprehension is needed to reliably assess social understanding.
                 </p>
@@ -146,7 +146,7 @@ const ResultsPage: React.FC = () => {
             {/* Section 2: Social Understanding Performance */}
             <div className="results-section">
                 <h3>Social Understanding Performance</h3>
-                 <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '1rem' }}>
+                 <p style={{ fontSize: '0.9em', marginBottom: '1rem' }}>
                     These scores show performance on different aspects of understanding social situations,
                     like recognizing awkward moments or figuring out people's thoughts and feelings.
                     Scores are shown relative to a maximum possible score of 1.0.

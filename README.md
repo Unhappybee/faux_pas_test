@@ -230,8 +230,8 @@ Uses pre-built Docker images and optimized configurations. Configured in `docker
 
 5.  **Database Operations:** See [Database Operations](#database-operations). Use the container name specified by `${BACKEND_CONTAINER_NAME}` in your `.env` file for exec commands:
     ```bash
-    # Example, assuming BACKEND_CONTAINER_NAME=fauxpas_backend_prod_container in .env
-    docker-compose -f docker-compose.prod.yml exec fauxpas_backend_prod_container npm run seed:fauxpas
+    # Example, assuming BACKEND_CONTAINER_NAME=backend in .env
+    docker-compose -f docker-compose.prod.yml exec backend npm run seed:fauxpas
     ```
 
 6.  **Stop containers:**

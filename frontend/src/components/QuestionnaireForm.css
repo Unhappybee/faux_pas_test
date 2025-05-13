@@ -1,171 +1,254 @@
-.form-container {
-  width: 100vw; 
-  height: 100vh; 
-  display: flex;
-  flex-direction: column; 
-  justify-content: center; 
-  align-items: center; 
-  padding: 20px;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  overflow-y: auto; 
-  box-sizing: border-box; 
-}
 
-/* Navigation Buttons */
-.navigation-buttons {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between; 
-  padding: 0 20px; 
-  box-sizing: border-box;
-}
 
-.nav-button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  background-color: #646cff;
-  color: white;
-  font-size: 1em;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: inline-block; 
-  text-align: center;
-}
- 
-.nav-button:hover {
-  background-color: #535bf2;
-}
-
-.nav-button:disabled {
-  background-color: #444;
-  cursor: not-allowed;
-}
-
-.button-container {
+/* --- Overall Page Layout --- */
+.questionnaire-page-container { /* New overall wrapper for the entire page */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 15px;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevent body scrollbars if fixed elements are slightly off */
 }
 
-.group-button, .back-button {
-  width: 200px;
-  padding: 10px;
-  font-size: 16px;
-  background-color: #646cff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.group-button:hover, .back-button:hover {
-  background-color: #535bf2;
-}
-
-
-
-/* Title Styling */
-.form-title {
-  font-size: 1.8em;
-  font-weight: bold;
-  text-align: top;
-  margin-bottom: 20px;
-  color: #f4f4f2;
-}
-
-/* Question Styling */
-.question {
-  margin-bottom: 20px;
-}
-
-.question-label {
-  font-size: 1.2em; 
-  font-weight: 600; 
-  color: var(--text-color);
-  line-height: 1.4; 
-  margin-bottom: 20px;
-}
-
-/* Textarea Styling */
-.question-textarea {
+.fixed-header-area { /* Container for title and progress bar */
+  position: sticky; 
+  top: 0;
+  left: 0;
   width: 100%;
-  box-sizing: border-box;.nav-button.disabled {
-    background-color: gray;
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  padding: 10px;
-  font-size: 1em;
-  border: 2px solid #646cff;
-  border-radius: 6px;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  resize: none;
-  transition: border 0.3s ease-in-out;
+  background-color: var(--background-color); /* Or a specific header background */
+  z-index: 100;
+  padding: 15px 25px; /* Padding for content within the header */
+  box-sizing: border-box;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Optional: shadow for separation */
 }
 
-.input-field{
-  width: 250px;
-  box-sizing: border-box;.nav-button.disabled {
-    background-color: gray;
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  padding: 10px;
-  margin-bottom: 20px;
-  font-size: 16px;
-  border: 2px solid #646cff;
-  border-radius: 6px;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  resize: none;
-  transition: border 0.3s ease-in-out;
-} 
-
-.question-textarea:focus {
-  border-color: #dcc40e;
-  outline: none;
+.form-title { /* Title styling */
+  font-size: 1.7em;
+  font-weight: bold;
+  color: var(--background-color); /* Or your preferred title color */
+  margin: 0 0 15px 0; /* Space below title, before progress bar */
+  text-align: left;
 }
 
-.choices-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.one-columns {
-  grid-template-columns: repeat(1, 1fr); 
-} 
-
-.three-columns {
-  grid-template-columns: repeat(3, 1fr); 
-}
-
-.option-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Progress Bar */
 .progress-bar-container {
   width: 100%;
-  background-color: var(--text-color);
-  height: 12px;
-  border-radius: 6px;
-  margin-bottom: 12px;
+  background-color:
+    rgba(255, 255, 255, 0.3); /* Lighter for contrast */
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 5px; /* Space below progress bar */
+}
+
+/* --- Overall Page Structure --- */
+.questionnaire-page-container { /* New wrapper for the entire page */
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column; /* Stack header, content, footer */
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Poppins', sans-serif; /* Assuming Poppins is globally available */
+  overflow: hidden; /* Prevent body scrollbars if fixed elements are sized correctly */
+}
+
+/* --- Fixed Header Area (Title + Progress) --- */
+.questionnaire-header {
+  position: sticky; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  color: #f4f4f2; /* Default text color for header, ensure contrast */
+  padding: 15px 30px; /* Consistent padding */
+  box-sizing: border-box;
+  z-index: 100; /* Keep above content */
+}
+
+.form-title { /* Title within the header */
+  font-size: 1.6em; 
+  font-weight: bold;
+  text-align: left;
+  margin: 0 0 10px 0; /* Space below title before progress bar */
+  color: #f4f4f2; /* Your specified color */
+}
+
+.progress-bar-container { /* Progress bar within the header */
+  width: 100%;
+  max-width: 800px; /* Optional: to not make it overly wide */
+  margin: 0 auto 5px auto; /* Center if max-width is set, space below */
+  background-color: rgba(255,255,255,0.3); /* Lighter for contrast */
+  height: 10px;
+  border-radius: 5px;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background-color: #3498db;
+  background-color: var(--accent-color); /* Or another progress color */
   transition: width 0.3s ease-in-out;
+  border-radius: 5px;
+}
+
+/* --- Scrollable Main Content Area --- */
+.questionnaire-content-area {
+  flex-grow: 1; /* Take remaining vertical space */
+  overflow-y: auto; /* Enable scrolling for this section only */
+  padding: 25px 30px;
+  /* NO padding-top needed here if header is sticky and correctly sized */
+  padding-bottom: 80px; /* Space for the fixed navigation buttons */
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 900px; /* Optional: constrain content width for readability */
+  margin: 0 auto;   /* Center if max-width is used */
+}
+
+/* Story Container within scrollable content */
+.story-display-container { /* Renamed from your .form-container for clarity */
+  background-color: var(--story-bg);
+  border: 1px solid var(--story-border);
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  color: var(--story-text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.story-display-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+  font-size: 1.3em;
+}
+.story-display-container p {
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* --- Question and Input Styling (within .questionnaire-content-area) --- */
+.question {
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.question-label {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--text-color);
+  line-height: 1.4;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.example-answer {
+  font-size: 0.9em;
+  color: #454545;
+  background-color: rgba(var(--primary-color-rgb, 100, 108, 255), 0.08);
+  padding: 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  margin-bottom: 15px;
+  font-style: italic;
+  line-height: 1.5;
+  border-left: 3px solid var(--primary-color);
+}
+.example-answer p { margin: 0 0 5px 0; }
+.example-answer p:last-child { margin-bottom: 0; }
+
+.question-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  resize: vertical;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+.question-textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 100, 108, 255), 0.25);
+}
+
+/* Styles for Boolean and Multiple Choice (copied from previous good example) */
+.booleanOptions { display: flex; gap: 25px; margin-top: 10px; }
+.booleanOptions label { font-size: 1em; cursor: pointer; display: inline-flex; align-items: center; color: var(--text-color); }
+.booleanOptions input[type="radio"] { margin-right: 8px; accent-color: var(--primary-color); transform: scale(1.1); }
+
+.choices-grid { display: grid; gap: 10px; margin-top: 10px; }
+.one-columns { grid-template-columns: repeat(1, 1fr); }
+.three-columns { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+.option-label {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border: 1px solid #ddd; border-radius: 6px; cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  background-color: var(--background-color); color: var(--text-color);
+}
+.option-label:hover {
+  background-color: rgba(var(--primary-color-rgb, 100, 108, 255), 0.05);
+  border-color: var(--primary-color);
+}
+.option-label input[type="checkbox"] { margin-right: 0; accent-color: var(--primary-color); transform: scale(1.1); }
+
+
+/* Navigation Buttons */
+.navigation-buttons {
+position: absolute;
+bottom: 20px;
+left: 0;
+width: 100%;
+display: flex;
+justify-content: space-between;
+padding: 0 20px;
+box-sizing: border-box;
+}
+.nav-button {
+padding: 10px 20px;
+border-radius: 8px;
+background-color: #646cff;
+color: white;
+font-size: 1em;
+font-weight: 600;
+border: none;
+cursor: pointer;
+transition: background-color 0.3s;
+display: inline-block;
+text-align: center;
+}
+.nav-button:hover {
+background-color: #535bf2;
+}
+.nav-button:disabled {
+background-color: #444;
+cursor: not-allowed;
+}
+.button-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 15px;
+}
+
+/* --- Error Page Specific (if needed, or keep in global) --- */
+.error-container-fullpage { /* Specific name for the full page error */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+    text-align: center;
+}
+.error-container-fullpage h2 { color: var(--error-color); margin-bottom: 15px; }
+.error-container-fullpage p { margin-bottom: 20px; }
+/* ... error-container-fullpage button styles ... */
+
+/* Re-add your global error message style if it's used inline for form validation */
+.error-message {
+  color: var(--error-color);
+  font-size: 0.9em;
+  margin-top: 5px;
+  display: block; /* Or inline-block depending on context */
 }
