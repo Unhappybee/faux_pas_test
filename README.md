@@ -20,8 +20,6 @@ FauxPas is a web-based application designed to administer and evaluate the "Faux
   - [Prisma Studio](#prisma-studio)
 - [ML Model](#ml-model)
 - [CI/CD - Docker Image Publishing](#cicd---docker-image-publishing)
-- [Troubleshooting Common Issues](#troubleshooting-common-issues)
-- [Notes & Potential Improvements](#notes--potential-improvements)
 
 
 ## Tech Stack
@@ -301,9 +299,4 @@ The `.github/workflows/docker-publish.yml` workflow:
     Example: `ghcr.io/unhappybee/faux_pas_test/fauxpas-backend:latest`.
     Ensure your `.env` file's `*_IMAGE_NAME` variables match this pattern when pulling these images.
 
-
-## Notes & Potential Improvements
-
-
-*   **Database Initialization & Migrations (Production):** For production, consider a more robust database initialization/migration strategy than relying solely on application startup (e.g., a dedicated migration job in your deployment pipeline before the application starts, or an init container).
 
