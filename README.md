@@ -27,7 +27,6 @@ FauxPas is a web-based application designed to administer and evaluate the "Faux
 *   **Frontend:**
     *   React 19 with Vite
     *   TypeScript
-    *   Tailwind CSS (via `@tailwindcss/postcss`)
     *   Axios for API communication
     *   React Router for navigation
     *   Headless UI for UI components
