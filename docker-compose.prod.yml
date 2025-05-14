@@ -2,6 +2,9 @@ services:
   # --- Backend API Service ---
   backend:
     image: ${BACKEND_IMAGE_NAME}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: ${BACKEND_CONTAINER_NAME}
     ports:
       - "${BACKEND_HOST_PORT}:8080"
@@ -20,6 +23,9 @@ services:
 
   ml_api:
     image: ${ML_API_IMAGE_NAME}
+    build:
+      context: ./ml_api
+      dockerfile: Dockerfile
     container_name: ${ML_API_CONTAINER_NAME}
     environment:
       PYTHONUNBUFFERED: 1 
@@ -29,6 +35,9 @@ services:
 
   frontend:
     image: ${FRONTEND_IMAGE_NAME}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: ${FRONTEND_CONTAINER_NAME}
     ports:
       - "${FRONTEND_HOST_PORT}:80"
